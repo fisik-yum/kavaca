@@ -1,0 +1,17 @@
+Ghatam (pot) is a discord bot designed to act as a chat forwarder that allows you to recieve discord messages without opening up too many DM channels, resulting in spam.
+
+It DOES NOT promise to anonymize your presence on discord.
+All code in this repository is licensed under the GPLv3 license
+
+Setting up:
+clone the repository using git clone, and compile it using go build
+
+set up your discord application and create a config.json beside the binary and format it like this
+
+{
+  "id": "<your user ID>",
+  "token": "<bot token>",
+  "prefix": "<prefix>"
+}
+
+please not that this bot may have many bugs.
