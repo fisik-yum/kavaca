@@ -31,6 +31,11 @@ func check(err error) {
 }
 
 func trim_index(in string, ind int) string {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("panic:", err)
+		}
+	}()
 	return strings.ReplaceAll(strings.Split(in, " ")[ind], " ", "")
 }
 

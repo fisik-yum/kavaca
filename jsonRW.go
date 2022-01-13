@@ -36,11 +36,11 @@ func read_config() { // main config file for end user
 	prefix = userData.Prefix
 	defaultChannel = userData.DefaultChannel
 	if token == "" || ownerID == "" {
-		log.Fatal("MANDATORY CONFIG INFO MISSING")
+		panic("Required config info missing")
 	}
 }
 
-func save_bindings() {
+func save_bindings() { //add sanitize
 	fd, err := json.Marshal(bindings)
 	check(err)
 	err = ioutil.WriteFile("bindings.json", fd, 0777)
@@ -49,6 +49,11 @@ func save_bindings() {
 
 func load_bindings() {
 	bindings = nil
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("panic:", err)
+		}
+	}()
 	f, err := ioutil.ReadFile("bindings.json")
 	check(err)
 	err = json.Unmarshal([]byte(f), &bindings)

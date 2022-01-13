@@ -44,9 +44,12 @@ func init() {
 	if os.IsNotExist(err) {
 		os.Create("bindings.json")
 	}
-	save_bindings()
-	read_config()
 	load_bindings()
+	fmt.Println(bindings)
+	save_bindings()
+	fmt.Println(bindings)
+	read_config()
+	fmt.Println(bindings)
 }
 
 func main() {
