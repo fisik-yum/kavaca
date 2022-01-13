@@ -1,5 +1,5 @@
 /*
-   Ghatam- a discord bot that acts as a mail forwarder
+   kavaca- a discord bot that acts as a mail forwarder
    Copyright (C) 2021  fisik_yum
 
    This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,7 @@ func create_bind(user string, channel string) {
 		return
 	}
 	bind := binding{User: user, Channel: channel}
-	bindings = append(bindings, bind) //create binding for user
+	bindings = append(bindings, bind)
 }
 
 func find_bind(user string) string {
@@ -51,11 +51,10 @@ func find_bind(user string) string {
 	return ""
 }
 
-func modify_bind(user string, channel string) bool { //implemented, not yet used eh?
+func modify_bind(user string, channel string) bool {
 	for x := 0; x < len(bindings); x++ {
 		if bindings[x].User == user {
 			bindings[x].Channel = channel
-			//fmt.Println(bindings)
 			return true
 		}
 	}

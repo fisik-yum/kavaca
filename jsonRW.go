@@ -1,5 +1,5 @@
 /*
-   Ghatam- a discord bot that acts as a mail forwarder
+   kavaca- a discord bot that acts as a mail forwarder
    Copyright (C) 2021  fisik_yum
 
    This program is free software: you can redistribute it and/or modify
@@ -22,17 +22,35 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 )
 
-func readRecipient() owner { // main config file for user
+func read_config() { // main config file for end user
 	f, err := ioutil.ReadFile("config.json")
 	check(err)
 	var userData owner
 	err = json.Unmarshal([]byte(f), &userData)
 	check(err)
-	return userData
+	token = userData.Token
+	ownerID = userData.ID
+	prefix = userData.Prefix
+	defaultChannel = userData.DefaultChannel
+	if token == "" || ownerID == "" {
+		log.Fatal("MANDATORY CONFIG INFO MISSING")
+	}
 }
 
-func load_bindings(bindingmap []binding) { //yet to be implemented
+func save_bindings() {
+	fd, err := json.Marshal(bindings)
+	check(err)
+	err = ioutil.WriteFile("bindings.json", fd, 0777)
+	check(err)
+}
 
+func load_bindings() {
+	bindings = nil
+	f, err := ioutil.ReadFile("bindings.json")
+	check(err)
+	err = json.Unmarshal([]byte(f), &bindings)
+	check(err)
 }

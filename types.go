@@ -1,5 +1,5 @@
 /*
-   Ghatam- a discord bot that acts as a mail forwarder
+   kavaca- a discord bot that acts as a mail forwarder
    Copyright (C) 2021  fisik_yum
 
    This program is free software: you can redistribute it and/or modify
@@ -21,9 +21,10 @@ package main
 //defines data structures
 
 type owner struct {
-	Token  string `json:"token"`
-	ID     string `json:"id"`
-	Prefix string `json:"prefix"`
+	Token          string `json:"token"`
+	ID             string `json:"id"`
+	Prefix         string `json:"prefix"`
+	DefaultChannel string `json:"defaultChannel"`
 }
 
 type binding struct {

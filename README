@@ -11,7 +11,19 @@ set up your discord application and create a config.json beside the binary and f
 {
   "id": "<your user ID>",
   "token": "<bot token>",
-  "prefix": "<prefix>"
+  "prefix": "<prefix>",
+  "defaultChannel": "<default message channel>"
 }
 
-please not that this bot may have many bugs.
+Set up bindings.json like this
+
+[]
+
+Usage:
+The bot NEEDS the owner's ID and bot token to function. A prefix is recommended.
+There are a few basic commands
+^bind <userID> <channelID> binds a users messages to one channel that the bot has access to.
+^listbinds shows the current binds in place in the console. mainly for testing.
+^reset <userID> reset user's bind to default channel
+^savebinds force save binds. kavaca saves binds automatically at shutdown.
+^info lackluster details about the bot.

@@ -1,5 +1,5 @@
 /*
-   Ghatam- a discord bot that acts as a mail forwarder
+   kavaca- a discord bot that acts as a mail forwarder
    Copyright (C) 2021  fisik_yum
 
    This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 
 package main
 
-// this is a modified version of the "ping pong example in discordgo examples"
+// this is a modified version of ping pong from discordgo examples
 
 import (
 	"fmt"
@@ -32,10 +32,11 @@ import (
 
 // variables found in config.json, which needs to exist
 var (
-	token    string
-	ownerID  string
-	prefix   string
-	bindings []binding
+	token          string
+	ownerID        string
+	prefix         string
+	defaultChannel string
+	bindings       []binding
 )
 
 func init() {
@@ -43,10 +44,9 @@ func init() {
 	if os.IsNotExist(err) {
 		os.Create("bindings.json")
 	}
-
-	token = readRecipient().Token
-	ownerID = readRecipient().ID
-	prefix = readRecipient().Prefix
+	save_bindings()
+	read_config()
+	load_bindings()
 }
 
 func main() {
@@ -54,16 +54,21 @@ func main() {
 	dg, err := discordgo.New("Bot " + token)
 	check(err)
 	dg.AddHandler(messageCreate)
-
+	dg.ShouldReconnectOnError = true
 	dg.Identify.Intents = 12800
 	err = dg.Open()
 	check(err)
+	if defaultChannel == "" {
+		dc, err := dg.UserChannelCreate(ownerID)
+		check(err)
+		defaultChannel = dc.ID
+	}
 
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-
+	save_bindings()
 	dg.Close()
 }
 
@@ -71,12 +76,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if s.State.User.ID == m.Author.ID {
 		return
 	}
-	if find_bind(m.Author.ID) == "" && m.Author.ID != ownerID {
-		nc, err := s.UserChannelCreate(ownerID)
-		check(err)
-		create_bind(m.Author.ID, nc.ID)
-	}
-	if m.Author.ID != ownerID { // basic forwarding //wil have to implement message redirects
+	if m.Author.ID != ownerID {
+		if find_bind(m.Author.ID) == "" {
+			create_bind(m.Author.ID, defaultChannel)
+		}
 		cID := find_bind(m.Author.ID)
 		s.ChannelMessageSend(cID, ("**" + m.Author.Username + "<" + m.Author.ID + ">" + ":** " + m.Content))
 		return
@@ -85,20 +88,36 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	//command handling, modular prefixes
 	cmd := trim_index(m.Content, 0)
 	if m.Author.ID == ownerID && strings.HasPrefix(cmd, prefix) {
-		s.ChannelMessageSend(m.ChannelID, ("` ghatam built with discordgo " + discordgo.VERSION + "`"))
 		if strings.HasPrefix(cmd, prefix+"bind") { //bind command. add functions to modify binds, otherwise useless.
-			bindID := trim_index(m.Content, 1)
-			if find_bind(bindID) == "" { // this can obviously be shrunk
-				nc, err := s.UserChannelCreate(ownerID)
-				check(err)
-				create_bind(m.Author.ID, nc.ID)
+			bindUS := trim_index(m.Content, 1)
+			bindCID := trim_index(m.Content, 2)
+			if find_bind(bindUS) == "" {
+				create_bind(bindUS, bindCID)
 			}
-			modify_bind(bindID, m.ChannelID)
-			s.ChannelMessageSend(m.ChannelID, "Created binding rule for user "+bindID)
-			fmt.Println(bindings)
+			modify_bind(bindUS, bindCID)
+			s.ChannelMessageSend(m.ChannelID, "rebound user "+bindUS)
+			return
 		}
-		if strings.HasPrefix(cmd, prefix+"listbinds") { //bind command
+		if strings.HasPrefix(cmd, prefix+"listbinds") {
 			fmt.Println(bindings)
+			save_bindings()
+			return
+		}
+		if strings.HasPrefix(cmd, prefix+"reset") {
+			bindUS := trim_index(m.Content, 1)
+			if find_bind(bindUS) == "" {
+				create_bind(bindUS, defaultChannel)
+			}
+			modify_bind(bindUS, defaultChannel)
+			s.ChannelMessageSend(m.ChannelID, "reset bind for user "+bindUS)
+			return
+		}
+		if strings.HasPrefix(cmd, prefix+"savebinds") {
+			save_bindings()
+		}
+		if strings.HasPrefix(cmd, prefix+"info") {
+			s.ChannelMessageSend(m.ChannelID, ("` kavaca built with discordgo " + discordgo.VERSION + "`"))
+			return
 		}
 	}
 }
