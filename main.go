@@ -40,16 +40,17 @@ var (
 )
 
 func init() {
-	_, err := os.Stat("bindings.json")
+	_, err := os.Stat("config.json")
+	if os.IsNotExist(err) {
+		panic("config.json is missing")
+	}
+	_, err = os.Stat("bindings.json")
 	if os.IsNotExist(err) {
 		os.Create("bindings.json")
 	}
 	load_bindings()
-	fmt.Println(bindings)
 	save_bindings()
-	fmt.Println(bindings)
 	read_config()
-	fmt.Println(bindings)
 }
 
 func main() {
@@ -80,6 +81,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	if m.Author.ID != ownerID {
+		c, err := s.Channel(m.ChannelID)
+		check(err)
+		if c.Type != discordgo.ChannelTypeDM { //only allow DM channels
+			return
+		}
 		if find_bind(m.Author.ID) == "" {
 			create_bind(m.Author.ID, defaultChannel)
 		}
